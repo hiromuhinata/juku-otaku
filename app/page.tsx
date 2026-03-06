@@ -18,6 +18,7 @@ type JukuData = {
   targets: string[];
   tiktokViews: string;
   thumbnail: string;
+  reelUrls: string[];
   review: { merit: string; demerit: string; peachComment: string };
   lineUrl: string;
 };
@@ -29,6 +30,52 @@ function StarRating({ rating }: { rating: number }) {
         <span key={i} className={`text-sm ${i <= Math.round(rating) ? "text-yellow-400" : "text-gray-300"}`}>★</span>
       ))}
       <span className="text-sm font-semibold text-gray-600 ml-1">{rating.toFixed(1)}</span>
+    </div>
+  );
+}
+
+function InstagramReels({ urls }: { urls: string[] }) {
+  const [current, setCurrent] = useState(0);
+  if (!urls || urls.length === 0) return null;
+
+  // URLからショートコードを抽出
+  const getEmbedUrl = (url: string) => {
+    const match = url.match(/instagram\.com\/(?:reel|p)\/([^/?]+)/);
+    if (!match) return null;
+    return `https://www.instagram.com/p/${match[1]}/embed/`;
+  };
+
+  const embedUrl = getEmbedUrl(urls[current]);
+  if (!embedUrl) return null;
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">📸 動画紹介</p>
+        {urls.length > 1 && (
+          <div className="flex gap-1">
+            {urls.map((_, i) => (
+              <button key={i} onClick={() => setCurrent(i)} className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-pink-500" : "bg-gray-300"}`} />
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="relative w-full rounded-xl overflow-hidden bg-gray-100" style={{ paddingBottom: "120%" }}>
+        <iframe
+          src={embedUrl}
+          className="absolute inset-0 w-full h-full"
+          frameBorder="0"
+          scrolling="no"
+          allowTransparency
+        />
+      </div>
+      {urls.length > 1 && (
+        <div className="flex gap-2 mt-2">
+          <button onClick={() => setCurrent((c) => (c - 1 + urls.length) % urls.length)} className="flex-1 text-xs py-1.5 bg-gray-100 rounded-lg text-gray-600">← 前</button>
+          <span className="text-xs text-gray-400 flex items-center">{current + 1}/{urls.length}</span>
+          <button onClick={() => setCurrent((c) => (c + 1) % urls.length)} className="flex-1 text-xs py-1.5 bg-gray-100 rounded-lg text-gray-600">次 →</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -70,7 +117,11 @@ function JukuCard({ juku }: { juku: JukuData }) {
             {juku.tags.map((tag) => <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200">{tag}</span>)}
           </div>
         )}
-        <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between text-sm font-semibold text-pink-500 border border-pink-200 rounded-xl px-4 py-2 hover:bg-pink-50 transition-colors">
+
+        {/* Instagramリール */}
+        <InstagramReels urls={juku.reelUrls} />
+
+        <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between text-sm font-semibold text-pink-500 border border-pink-200 rounded-xl px-4 py-2 hover:bg-pink-50 transition-colors mt-4">
           <span>🔍 ぶっちゃけレビューを見る</span>
           <span className={`transition-transform duration-200 inline-block ${open ? "rotate-180" : ""}`}>▼</span>
         </button>
@@ -122,6 +173,7 @@ export default function Home() {
         targets: ((row.juku_targets as { target: string }[]) || []).map((t) => t.target),
         tiktokViews: (row.tiktok_views as string) || "",
         thumbnail: ((row.images as string[]) || [])[0] || DEFAULT_THUMBNAIL,
+        reelUrls: (row.reel_urls as string[]) || [],
         review: { merit: (row.merit as string) || "", demerit: (row.demerit as string) || "", peachComment: (row.peach_comment as string) || "" },
         lineUrl: (row.line_url as string) || "",
       }));
@@ -154,7 +206,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FFF8F5]">
-      {/* フィルターモーダル */}
       {filterOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setFilterOpen(false)} />
@@ -162,13 +213,10 @@ export default function Home() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-800">🔧 絞り込み</h2>
               <div className="flex gap-2">
-                {activeFilterCount > 0 && (
-                  <button onClick={clearAll} className="text-xs text-gray-400 underline">すべてクリア</button>
-                )}
+                {activeFilterCount > 0 && <button onClick={clearAll} className="text-xs text-gray-400 underline">すべてクリア</button>}
                 <button onClick={() => setFilterOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">✕</button>
               </div>
             </div>
-
             {allAreas.length > 0 && (
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">📍 エリア</p>
@@ -180,7 +228,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-
             {allTags.length > 0 && (
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">🏷️ タグ</p>
@@ -191,7 +238,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-
             {allTargets.length > 0 && (
               <div className="mb-6">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">🎯 こんな人向け</p>
@@ -202,10 +248,7 @@ export default function Home() {
                 </div>
               </div>
             )}
-
-            <button onClick={() => setFilterOpen(false)} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white font-bold text-sm">
-              {filtered.length}件を表示する
-            </button>
+            <button onClick={() => setFilterOpen(false)} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white font-bold text-sm">{filtered.length}件を表示する</button>
           </div>
         </div>
       )}
@@ -226,26 +269,18 @@ export default function Home() {
               <span>💬</span> LINE相談
             </a>
           </div>
-
-          {/* 検索バー + 絞り込みボタン */}
           <div className="flex gap-2 mb-3">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 text-sm">🔍</span>
               <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder="塾名・駅名で検索" className="w-full pl-8 pr-8 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/60 text-sm outline-none focus:bg-white/30 transition-colors" />
               {searchText && <button onClick={() => setSearchText("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white text-sm">✕</button>}
             </div>
-            <button
-              onClick={() => setFilterOpen(true)}
-              className={`relative flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold transition-colors ${activeFilterCount > 0 ? "bg-white text-[#FF6B9D] border-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"}`}
-            >
+            <button onClick={() => setFilterOpen(true)} className={`relative flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold transition-colors ${activeFilterCount > 0 ? "bg-white text-[#FF6B9D] border-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"}`}>
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
               絞り込む
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#FF6B9D] text-white text-[10px] font-bold rounded-full flex items-center justify-center">{activeFilterCount}</span>
-              )}
+              {activeFilterCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#FF6B9D] text-white text-[10px] font-bold rounded-full flex items-center justify-center">{activeFilterCount}</span>}
             </button>
           </div>
-
           <button onClick={() => setMissionOpen(!missionOpen)} className="w-full flex items-center justify-between bg-white/15 backdrop-blur-sm border border-white/25 rounded-xl px-4 py-2.5 text-white text-sm font-semibold hover:bg-white/25 transition-colors">
             <span>💡 なぜこのサイトを作ったか</span>
             <span className={`transition-transform duration-200 inline-block text-xs ${missionOpen ? "rotate-180" : ""}`}>▼</span>
@@ -263,9 +298,7 @@ export default function Home() {
         {!loading && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-400">{filtered.length}件の塾が見つかりました</p>
-            {activeFilterCount > 0 && (
-              <button onClick={clearAll} className="text-xs text-pink-400 underline">フィルターをクリア</button>
-            )}
+            {activeFilterCount > 0 && <button onClick={clearAll} className="text-xs text-pink-400 underline">フィルターをクリア</button>}
           </div>
         )}
         <div className="space-y-5">
