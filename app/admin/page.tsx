@@ -43,6 +43,7 @@ const emptyForm: FormState = {
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true); // 起動時チェック中
   const [password, setPassword] = useState("");
   const [form, setForm] = useState<FormState>(emptyForm);
   const [images, setImages] = useState<string[]>([]);
@@ -52,6 +53,15 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 起動時にlocalStorageからログイン状態を確認
+  useEffect(() => {
+    const saved = localStorage.getItem("admin_authed");
+    if (saved === "true") {
+      setAuthed(true);
+    }
+    setChecking(false);
+  }, []);
+
   useEffect(() => { if (authed) fetchJukus(); }, [authed]);
 
   async function fetchJukus() {
@@ -59,6 +69,26 @@ export default function AdminPage() {
     if (!res.ok) { alert("一覧取得失敗: " + await res.text()); return; }
     const json = await res.json();
     setJukus(json.data || []);
+  }
+
+  async function handleLogin() {
+    const res = await fetch("/api/auth/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) {
+      localStorage.setItem("admin_authed", "true");
+      setAuthed(true);
+    } else {
+      alert("パスワードが違います");
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("admin_authed");
+    setAuthed(false);
+    setPassword("");
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -116,6 +146,15 @@ export default function AdminPage() {
     window.scrollTo(0, 0);
   }
 
+  // 起動チェック中はローディング表示
+  if (checking) {
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #FFE4EE 0%, #FFF0F5 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#FF6B9D", fontSize: 32 }}>🍑</p>
+      </div>
+    );
+  }
+
   if (!authed) {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #FFE4EE 0%, #FFF0F5 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -126,10 +165,10 @@ export default function AdminPage() {
           </div>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="パスワードを入力"
-            onKeyDown={(e) => { if (e.key === "Enter") fetch("/api/auth/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) }).then((r) => r.ok ? setAuthed(true) : alert("パスワードが違います")); }}
+            onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }}
             style={{ width: "100%", background: "#FFF0F5", color: "#333", borderRadius: 12, padding: "12px 16px", border: "2px solid #FFD6E7", marginBottom: 16, fontSize: 14, boxSizing: "border-box", outline: "none" }}
           />
-          <button onClick={() => fetch("/api/auth/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) }).then((r) => r.ok ? setAuthed(true) : alert("パスワードが違います"))}
+          <button onClick={handleLogin}
             style={{ width: "100%", background: "linear-gradient(to right, #FF6B9D, #FF9A3C)", color: "white", fontWeight: "bold", padding: "13px 0", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 15 }}>
             ログイン
           </button>
@@ -149,8 +188,9 @@ export default function AdminPage() {
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #FFE4EE 0%, #FFF8F5 100%)", padding: "16px" }}>
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 24, paddingTop: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, paddingTop: 8 }}>
           <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#FF6B9D", margin: 0 }}>🍑 塾管理画面</h1>
+          <button onClick={handleLogout} style={{ fontSize: 12, color: "#aaa", background: "white", border: "1px solid #eee", borderRadius: 8, padding: "6px 12px", cursor: "pointer" }}>ログアウト</button>
         </div>
 
         <div style={{ background: "white", borderRadius: 20, padding: 24, marginBottom: 24, boxShadow: "0 4px 20px rgba(255,107,157,0.12)", border: "1px solid #FFE4EE" }}>
@@ -159,7 +199,6 @@ export default function AdminPage() {
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
             <div style={sectionStyle}>
               <p style={{ fontSize: 11, color: "#FF9A3C", fontWeight: "bold", marginBottom: 12, letterSpacing: 1 }}>📌 基本情報</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -189,8 +228,8 @@ export default function AdminPage() {
             <div style={sectionStyle}>
               <p style={{ fontSize: 11, color: "#FF9A3C", fontWeight: "bold", marginBottom: 12, letterSpacing: 1 }}>💬 レビュー</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div><label style={labelStyle}>メリット・塾の特徴</label><textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。毎日の勉強計画を一緒に立ててくれる。" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
-                <div><label style={labelStyle}>ぴーちゃんの一言 🍑</label><textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！自分を追い込みたい人におすすめ🔥" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
+                <div><label style={labelStyle}>メリット・塾の特徴</label><textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
+                <div><label style={labelStyle}>ぴーちゃんの一言 🍑</label><textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！🔥" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
               </div>
             </div>
 
@@ -200,8 +239,7 @@ export default function AdminPage() {
                 <div><label style={labelStyle}>LINE URL</label><input value={form.line_url} onChange={(e) => setForm({ ...form, line_url: e.target.value })} placeholder="例：https://lin.ee/xxxxx" style={inputStyle} /></div>
                 <div>
                   <label style={labelStyle}>📸 Instagramリール（1行に1つ）</label>
-                  <textarea value={form.reel_urls} onChange={(e) => setForm({ ...form, reel_urls: e.target.value })} placeholder={"例：\nhttps://www.instagram.com/reel/xxxxx/\nhttps://www.instagram.com/reel/yyyyy/"} rows={4} style={{ ...inputStyle, resize: "none" }} />
-                  <p style={{ fontSize: 11, color: "#aaa", marginTop: 4 }}>※ タップするとInstagramに移動します</p>
+                  <textarea value={form.reel_urls} onChange={(e) => setForm({ ...form, reel_urls: e.target.value })} placeholder={"例：\nhttps://www.instagram.com/reel/xxxxx/"} rows={4} style={{ ...inputStyle, resize: "none" }} />
                 </div>
               </div>
             </div>
