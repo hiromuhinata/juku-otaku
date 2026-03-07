@@ -1,22 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+
+type Juku = {
+  id: string;
+  name: string;
+  area: string;
+  station: string | null;
+  address: string | null;
+  hours: string | null;
+  type: string | null;
+  merit: string | null;
+  peach_comment: string | null;
+  line_url: string | null;
+  images: string[] | null;
+  reel_urls: string[] | null;
+  juku_tags: { tag: string }[];
+  juku_targets: { target: string }[];
+};
 
 type FormState = {
   name: string;
   area: string;
   station: string;
+  address: string;
+  hours: string;
   type: string;
-  price_range: string;
   merit: string;
-  demerit: string;
   peach_comment: string;
-  rating: string;
   line_url: string;
   tags: string;
   targets: string;
-  tiktok_views: string;
   reel_urls: string;
 };
 
@@ -24,16 +39,14 @@ const emptyForm: FormState = {
   name: "",
   area: "",
   station: "",
+  address: "",
+  hours: "",
   type: "",
-  price_range: "",
   merit: "",
-  demerit: "",
   peach_comment: "",
-  rating: "",
   line_url: "",
   tags: "",
   targets: "",
-  tiktok_views: "",
   reel_urls: "",
 };
 
@@ -41,11 +54,12 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [images, setImages] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  const [jukus, setJukus] = useState<Record<string, unknown>[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [jukus, setJukus] = useState<Juku[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (authed) fetchJukus();
@@ -58,17 +72,43 @@ export default function AdminPage() {
     setJukus(json.data || []);
   }
 
-  async function handleSave() {
-    setSaving(true);
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
     const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    images.forEach((f) => fd.append("images", f));
-    if (editingId) fd.append("id", editingId);
-    const res = await fetch("/api/admin/juku", { method: "POST", body: fd });
+    files.forEach((f) => fd.append("images", f));
+    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+    if (!res.ok) { alert("画像アップロード失敗"); setUploading(false); return; }
+    const json = await res.json();
+    setImages((prev) => [...prev, ...(json.urls as string[])]);
+    setUploading(false);
+  }
+
+  const handleRemoveImage = (url: string) => {
+    setImages((prev) => prev.filter((u) => u !== url));
+  };
+
+  async function handleSave() {
+    if (!form.name || !form.area) { alert("塾名とエリアは必須です"); return; }
+    setSaving(true);
+    const reelUrls = form.reel_urls.split("\n").map((u) => u.trim()).filter((u) => u.length > 0);
+    const body = {
+      id: editingId,
+      ...form,
+      images,
+      reel_urls: reelUrls,
+      tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+      targets: form.targets.split(",").map((t) => t.trim()).filter(Boolean),
+    };
+    const res = await fetch("/api/admin/juku", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
     if (!res.ok) { alert("保存失敗: " + await res.text()); setSaving(false); return; }
     setForm(emptyForm);
     setImages([]);
-    setPreviews([]);
     setEditingId(null);
     setSaving(false);
     fetchJukus();
@@ -76,140 +116,177 @@ export default function AdminPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("削除しますか？")) return;
-    const res = await fetch("/api/admin/juku", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    const res = await fetch("/api/admin/juku", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
     if (!res.ok) { alert("削除失敗"); return; }
     fetchJukus();
   }
 
-  function handleEdit(juku: Record<string, unknown>) {
-    setEditingId(juku.id as string);
+  function handleEdit(juku: Juku) {
+    setEditingId(juku.id);
     setForm({
-      name: (juku.name as string) || "",
-      area: (juku.area as string) || "",
-      station: (juku.station as string) || "",
-      type: (juku.type as string) || "",
-      price_range: (juku.price_range as string) || "",
-      merit: (juku.merit as string) || "",
-      demerit: (juku.demerit as string) || "",
-      peach_comment: (juku.peach_comment as string) || "",
-      rating: String(juku.rating || ""),
-      line_url: (juku.line_url as string) || "",
-      tags: ((juku.juku_tags as { tag: string }[]) || []).map((t) => t.tag).join(","),
-      targets: ((juku.juku_targets as { target: string }[]) || []).map((t) => t.target).join(","),
-      tiktok_views: (juku.tiktok_views as string) || "",
-      reel_urls: ((juku.reel_urls as string[]) || []).join("\n"),
+      name: juku.name || "",
+      area: juku.area || "",
+      station: juku.station || "",
+      address: juku.address || "",
+      hours: juku.hours || "",
+      type: juku.type || "",
+      merit: juku.merit || "",
+      peach_comment: juku.peach_comment || "",
+      line_url: juku.line_url || "",
+      tags: (juku.juku_tags || []).map((t) => t.tag).join(","),
+      targets: (juku.juku_targets || []).map((t) => t.target).join(","),
+      reel_urls: (juku.reel_urls || []).join("\n"),
     });
-    setPreviews(((juku.images as string[]) || []));
+    setImages(juku.images || []);
     window.scrollTo(0, 0);
-  }
-
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || []);
-    setImages((prev) => [...prev, ...files]);
-    const newPreviews = files.map((f) => URL.createObjectURL(f));
-    setPreviews((prev) => [...prev, ...newPreviews]);
   }
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="bg-gray-800 rounded-2xl p-8 w-80">
-          <h1 className="text-white font-bold text-xl mb-6 text-center">🍑 管理画面</h1>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="パスワード" className="w-full bg-gray-700 text-white rounded-xl px-4 py-3 mb-4 outline-none" onKeyDown={(e) => e.key === "Enter" && fetch("/api/auth/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) }).then((r) => r.ok && setAuthed(true)).catch(() => {})} />
-          <button onClick={() => fetch("/api/auth/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) }).then((r) => r.ok ? setAuthed(true) : alert("パスワードが違います")).catch(() => alert("エラー"))} className="w-full bg-pink-500 text-white font-bold py-3 rounded-xl hover:bg-pink-600">ログイン</button>
+      <div style={{ minHeight: "100vh", background: "#1a1a2e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ background: "#16213e", borderRadius: 16, padding: 32, width: 320 }}>
+          <h1 style={{ color: "white", fontWeight: "bold", fontSize: 20, marginBottom: 24, textAlign: "center" }}>🍑 管理画面</h1>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="パスワードを入力"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                fetch("/api/auth/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) })
+                  .then((r) => r.ok ? setAuthed(true) : alert("パスワードが違います"))
+                  .catch(() => alert("エラー"));
+              }
+            }}
+            style={{ width: "100%", background: "#0f3460", color: "white", borderRadius: 8, padding: "12px 16px", border: "none", marginBottom: 16, fontSize: 14, boxSizing: "border-box" }}
+          />
+          <button
+            onClick={() => fetch("/api/auth/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) }).then((r) => r.ok ? setAuthed(true) : alert("パスワードが違います")).catch(() => alert("エラー"))}
+            style={{ width: "100%", background: "linear-gradient(to right, #FF6B9D, #FF9A3C)", color: "white", fontWeight: "bold", padding: "12px 0", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 14 }}
+          >
+            ログイン
+          </button>
         </div>
       </div>
     );
   }
 
+  const inputStyle = { width: "100%", background: "#0f3460", color: "white", borderRadius: 8, padding: "10px 14px", border: "none", fontSize: 14, boxSizing: "border-box" as const };
+  const labelStyle = { fontSize: 12, color: "#aaa", display: "block", marginBottom: 4 };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">🍑 塾管理画面</h1>
+    <div style={{ minHeight: "100vh", background: "#1a1a2e", color: "white", padding: 16 }}>
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <h1 style={{ fontSize: 22, fontWeight: "bold", marginBottom: 24 }}>🍑 塾管理画面</h1>
 
-        <div className="bg-gray-800 rounded-2xl p-6 mb-8">
-          <h2 className="text-lg font-bold mb-4">{editingId ? "✏️ 編集中" : "＋ 新規登録"}</h2>
-          <div className="space-y-3">
-            {[
-              { key: "name", label: "塾名*" },
-              { key: "area", label: "エリア*" },
-              { key: "station", label: "最寄り駅*" },
-              { key: "type", label: "授業形式（例：個別指導）" },
-              { key: "price_range", label: "料金（例：月2〜5万円）" },
-              { key: "tiktok_views", label: "TikTok再生数（例：12万）" },
-              { key: "line_url", label: "LINE URL" },
-              { key: "rating", label: "評価（1〜5）" },
-              { key: "tags", label: "タグ（カンマ区切り）" },
-              { key: "targets", label: "こんな人向け（カンマ区切り）" },
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className="text-xs text-gray-400 mb-1 block">{label}</label>
-                <input value={form[key as keyof FormState]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} className="w-full bg-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-pink-500" />
-              </div>
-            ))}
-            {[
-              { key: "merit", label: "メリット" },
-              { key: "demerit", label: "デメリット" },
-              { key: "peach_comment", label: "ぴーちゃんの一言" },
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className="text-xs text-gray-400 mb-1 block">{label}</label>
-                <textarea value={form[key as keyof FormState]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} rows={3} className="w-full bg-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-pink-500 resize-none" />
-              </div>
-            ))}
+        <div style={{ background: "#16213e", borderRadius: 16, padding: 24, marginBottom: 32 }}>
+          <h2 style={{ fontSize: 16, fontWeight: "bold", marginBottom: 16 }}>{editingId ? "✏️ 編集中" : "＋ 新規登録"}</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
-            {/* InstagramリールURL */}
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">📸 InstagramリールURL（1行に1つ）</label>
-              <textarea
-                value={form.reel_urls}
-                onChange={(e) => setForm({ ...form, reel_urls: e.target.value })}
-                rows={4}
-                placeholder={"https://www.instagram.com/reel/xxxxx/\nhttps://www.instagram.com/reel/yyyyy/"}
-                className="w-full bg-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-              />
-              <p className="text-xs text-gray-500 mt-1">※ InstagramのリールURLを1行ずつ入力してください</p>
+              <label style={labelStyle}>塾名*</label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="例：武田塾 渋谷校" style={inputStyle} />
             </div>
-
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">画像（複数可）</label>
-              <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full bg-gray-700 rounded-xl px-4 py-2.5 text-sm" />
-              {previews.length > 0 && (
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {previews.map((p, i) => (
-                    <div key={i} className="relative w-20 h-20">
-                      <Image src={p} alt="" fill className="object-cover rounded-lg" unoptimized />
+              <label style={labelStyle}>エリア*</label>
+              <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} placeholder="例：渋谷" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>最寄り駅</label>
+              <input value={form.station} onChange={(e) => setForm({ ...form, station: e.target.value })} placeholder="例：渋谷駅 徒歩3分" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>住所</label>
+              <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="例：東京都渋谷区道玄坂1-2-3 渋谷ビル4F" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>営業時間</label>
+              <input value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="例：月〜土 13:00〜22:00" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>授業形式</label>
+              <input value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} placeholder="例：個別指導" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>LINE URL</label>
+              <input value={form.line_url} onChange={(e) => setForm({ ...form, line_url: e.target.value })} placeholder="例：https://lin.ee/xxxxx" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>タグ（カンマ区切り）</label>
+              <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="例：逆転合格,管理型,自習室神" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>こんな人向け（カンマ区切り）</label>
+              <input value={form.targets} onChange={(e) => setForm({ ...form, targets: e.target.value })} placeholder="例：家で集中できない,浪人生,難関大志望" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>メリット・塾の特徴</label>
+              <textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。毎日の勉強計画を一緒に立ててくれる。" rows={3} style={{ ...inputStyle, resize: "none" }} />
+            </div>
+            <div>
+              <label style={labelStyle}>ぴーちゃんの一言</label>
+              <textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！自分を追い込みたい人におすすめ🔥" rows={3} style={{ ...inputStyle, resize: "none" }} />
+            </div>
+            <div>
+              <label style={labelStyle}>📸 Instagramリール（1行に1つ）</label>
+              <textarea value={form.reel_urls} onChange={(e) => setForm({ ...form, reel_urls: e.target.value })} placeholder={"例：\nhttps://www.instagram.com/reel/xxxxx/\nhttps://www.instagram.com/reel/yyyyy/"} rows={4} style={{ ...inputStyle, resize: "none" }} />
+              <p style={{ fontSize: 11, color: "#888", marginTop: 4 }}>※ タップするとInstagramに移動します</p>
+            </div>
+            <div>
+              <label style={labelStyle}>画像（複数可）</label>
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ background: "#0f3460", color: "white", borderRadius: 8, padding: "10px 16px", border: "none", cursor: "pointer", fontSize: 14 }}>
+                {uploading ? "アップロード中..." : "クリックして画像を選択（複数可）"}
+              </button>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageUpload} style={{ display: "none" }} />
+              {images.length > 0 && (
+                <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                  {images.map((url) => (
+                    <div key={url} style={{ position: "relative", width: 100, height: 100, borderRadius: 8, overflow: "hidden", border: "1px solid #333" }}>
+                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button onClick={() => handleRemoveImage(url)} style={{ position: "absolute", top: 2, right: 2, background: "rgba(0,0,0,0.7)", color: "white", border: "none", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", fontSize: 10 }}>✕</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
-            <button onClick={handleSave} disabled={saving} className="flex-1 bg-gradient-to-r from-pink-500 to-orange-400 text-white font-bold py-3 rounded-xl hover:opacity-90 disabled:opacity-50">
+
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <button onClick={handleSave} disabled={saving} style={{ flex: 1, background: saving ? "#555" : "linear-gradient(to right, #FF6B9D, #FF9A3C)", color: "white", fontWeight: "bold", padding: "12px 0", borderRadius: 10, border: "none", cursor: saving ? "not-allowed" : "pointer", fontSize: 14 }}>
               {saving ? "保存中..." : editingId ? "更新する" : "登録する"}
             </button>
             {editingId && (
-              <button onClick={() => { setEditingId(null); setForm(emptyForm); setPreviews([]); }} className="px-6 bg-gray-600 text-white font-bold py-3 rounded-xl">キャンセル</button>
+              <button onClick={() => { setEditingId(null); setForm(emptyForm); setImages([]); }} style={{ padding: "12px 20px", background: "#444", color: "white", fontWeight: "bold", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14 }}>
+                キャンセル
+              </button>
             )}
           </div>
         </div>
 
-        <h2 className="text-lg font-bold mb-3">登録済みの塾（{jukus.length}件）</h2>
-        <div className="space-y-3">
-          {jukus.length === 0 && <p className="text-gray-400 text-center py-8">まだ登録されていません</p>}
+        <h2 style={{ fontSize: 16, fontWeight: "bold", marginBottom: 12 }}>登録済みの塾（{jukus.length}件）</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {jukus.length === 0 && <p style={{ color: "#888", textAlign: "center", padding: "32px 0" }}>まだ登録されていません</p>}
           {jukus.map((juku) => (
-            <div key={juku.id as string} className="bg-gray-800 rounded-xl p-4 flex items-center justify-between">
-              <div>
-                <p className="font-bold">{juku.name as string}</p>
-                <p className="text-sm text-gray-400">{juku.area as string} / {juku.station as string}</p>
-                {((juku.reel_urls as string[]) || []).length > 0 && (
-                  <p className="text-xs text-pink-400 mt-1">📸 リール {((juku.reel_urls as string[]) || []).length}本</p>
+            <div key={juku.id} style={{ background: "#16213e", borderRadius: 12, padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
+              {juku.images && juku.images[0] && (
+                <div style={{ position: "relative", width: 60, height: 60, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
+                  <Image src={juku.images[0]} alt={juku.name} fill unoptimized style={{ objectFit: "cover" }} sizes="60px" />
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: "bold", marginBottom: 2 }}>{juku.name}</p>
+                <p style={{ fontSize: 12, color: "#aaa" }}>{juku.area} / {juku.station}</p>
+                {(juku.reel_urls || []).length > 0 && (
+                  <p style={{ fontSize: 11, color: "#FF6B9D", marginTop: 2 }}>📸 リール {(juku.reel_urls || []).length}本</p>
                 )}
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(juku)} className="text-xs bg-blue-600 px-3 py-1.5 rounded-lg">編集</button>
-                <button onClick={() => handleDelete(juku.id as string)} className="text-xs bg-red-600 px-3 py-1.5 rounded-lg">削除</button>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button onClick={() => handleEdit(juku)} style={{ fontSize: 12, background: "#1a5276", color: "white", padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer" }}>編集</button>
+                <button onClick={() => handleDelete(juku.id)} style={{ fontSize: 12, background: "#922b21", color: "white", padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer" }}>削除</button>
               </div>
             </div>
           ))}
