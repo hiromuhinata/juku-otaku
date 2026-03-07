@@ -16,68 +16,33 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const fd = await req.formData();
-  const id = fd.get("id") as string | null;
-
-  const reelUrlsRaw = (fd.get("reel_urls") as string) || "";
-  const reelUrls = reelUrlsRaw
-    .split("\n")
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0);
+  const body = await req.json();
+  const { id, name, area, station, address, hours, type, merit, peach_comment, line_url, images, reel_urls, tags, targets } = body;
 
   const jukuData = {
-    name: fd.get("name") as string,
-    area: fd.get("area") as string,
-    station: fd.get("station") as string,
-    type: fd.get("type") as string,
-    price_range: fd.get("price_range") as string,
-    merit: fd.get("merit") as string,
-    demerit: fd.get("demerit") as string,
-    peach_comment: fd.get("peach_comment") as string,
-    rating: parseFloat(fd.get("rating") as string) || 0,
-    line_url: fd.get("line_url") as string,
-    tiktok_views: fd.get("tiktok_views") as string,
-    reel_urls: reelUrls,
+    name, area, station, address, hours, type, merit, peach_comment, line_url,
+    images: images || [],
+    reel_urls: reel_urls || [],
   };
-
-  // 画像アップロード
-  const imageFiles = fd.getAll("images") as File[];
-  const imageUrls: string[] = [];
-  for (const file of imageFiles) {
-    if (file.size === 0) continue;
-    const ext = file.name.split(".").pop();
-    const path = `juku-images/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const { error: uploadError } = await supabase.storage
-      .from("juku-images")
-      .upload(path, buffer, { contentType: file.type });
-    if (uploadError) continue;
-    const { data: urlData } = supabase.storage.from("juku-images").getPublicUrl(path);
-    imageUrls.push(urlData.publicUrl);
-  }
 
   let jukuId = id;
   if (id) {
-    const { error } = await supabase.from("jukus").update({ ...jukuData, ...(imageUrls.length > 0 ? { images: imageUrls } : {}) }).eq("id", id);
+    const { error } = await supabase.from("jukus").update(jukuData).eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   } else {
-    const { data, error } = await supabase.from("jukus").insert({ ...jukuData, images: imageUrls }).select().single();
+    const { data, error } = await supabase.from("jukus").insert(jukuData).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     jukuId = data.id;
   }
 
-  // タグ更新
-  const tags = ((fd.get("tags") as string) || "").split(",").map((t) => t.trim()).filter(Boolean);
-  if (tags.length > 0 && jukuId) {
+  if (tags && jukuId) {
     await supabase.from("juku_tags").delete().eq("juku_id", jukuId);
-    await supabase.from("juku_tags").insert(tags.map((tag) => ({ juku_id: jukuId, tag })));
+    if (tags.length > 0) await supabase.from("juku_tags").insert(tags.map((tag: string) => ({ juku_id: jukuId, tag })));
   }
 
-  // ターゲット更新
-  const targets = ((fd.get("targets") as string) || "").split(",").map((t) => t.trim()).filter(Boolean);
-  if (targets.length > 0 && jukuId) {
+  if (targets && jukuId) {
     await supabase.from("juku_targets").delete().eq("juku_id", jukuId);
-    await supabase.from("juku_targets").insert(targets.map((target) => ({ juku_id: jukuId, target })));
+    if (targets.length > 0) await supabase.from("juku_targets").insert(targets.map((target: string) => ({ juku_id: jukuId, target })));
   }
 
   return NextResponse.json({ success: true });
