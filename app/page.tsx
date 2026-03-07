@@ -11,74 +11,16 @@ type JukuData = {
   name: string;
   area: string;
   station: string;
+  address: string;
+  hours: string;
   type: string;
-  price: string;
-  rating: number;
   tags: string[];
   targets: string[];
-  tiktokViews: string;
   thumbnail: string;
   reelUrls: string[];
-  review: { merit: string; demerit: string; peachComment: string };
+  review: { merit: string; peachComment: string };
   lineUrl: string;
 };
-
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1,2,3,4,5].map((i) => (
-        <span key={i} className={`text-sm ${i <= Math.round(rating) ? "text-yellow-400" : "text-gray-300"}`}>★</span>
-      ))}
-      <span className="text-sm font-semibold text-gray-600 ml-1">{rating.toFixed(1)}</span>
-    </div>
-  );
-}
-
-function InstagramReels({ urls }: { urls: string[] }) {
-  const [current, setCurrent] = useState(0);
-  if (!urls || urls.length === 0) return null;
-
-  // URLからショートコードを抽出
-  const getEmbedUrl = (url: string) => {
-    const match = url.match(/instagram\.com\/(?:reel|p)\/([^/?]+)/);
-    if (!match) return null;
-    return `https://www.instagram.com/p/${match[1]}/embed/`;
-  };
-
-  const embedUrl = getEmbedUrl(urls[current]);
-  if (!embedUrl) return null;
-
-  return (
-    <div className="mt-4">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">📸 動画紹介</p>
-        {urls.length > 1 && (
-          <div className="flex gap-1">
-            {urls.map((_, i) => (
-              <button key={i} onClick={() => setCurrent(i)} className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-pink-500" : "bg-gray-300"}`} />
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="relative w-full rounded-xl overflow-hidden bg-gray-100" style={{ paddingBottom: "120%" }}>
-        <iframe
-          src={embedUrl}
-          className="absolute inset-0 w-full h-full"
-          frameBorder="0"
-          scrolling="no"
-          allowTransparency
-        />
-      </div>
-      {urls.length > 1 && (
-        <div className="flex gap-2 mt-2">
-          <button onClick={() => setCurrent((c) => (c - 1 + urls.length) % urls.length)} className="flex-1 text-xs py-1.5 bg-gray-100 rounded-lg text-gray-600">← 前</button>
-          <span className="text-xs text-gray-400 flex items-center">{current + 1}/{urls.length}</span>
-          <button onClick={() => setCurrent((c) => (c + 1) % urls.length)} className="flex-1 text-xs py-1.5 bg-gray-100 rounded-lg text-gray-600">次 →</button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function JukuCard({ juku }: { juku: JukuData }) {
   const [open, setOpen] = useState(false);
@@ -87,18 +29,7 @@ function JukuCard({ juku }: { juku: JukuData }) {
       <div className="relative h-[200px] w-full">
         <Image src={juku.thumbnail} alt={juku.name} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" unoptimized />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        {juku.tiktokViews && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.2 8.2 0 004.79 1.53V6.82a4.85 4.85 0 01-1.02-.13z"/></svg>
-            {juku.tiktokViews}回再生
-          </div>
-        )}
         <div className="absolute top-3 right-3 bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white text-xs font-bold px-3 py-1 rounded-full">{juku.area}</div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-white/30 backdrop-blur-sm border-2 border-white flex items-center justify-center">
-            <svg className="w-6 h-6 text-white ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-        </div>
         <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
           <div className="flex items-end justify-between">
             <h2 className="text-white font-bold text-lg leading-tight drop-shadow">{juku.name}</h2>
@@ -106,32 +37,52 @@ function JukuCard({ juku }: { juku: JukuData }) {
           </div>
         </div>
       </div>
+
       <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-500">📍 {juku.station}</p>
-          <StarRating rating={juku.rating} />
+        {/* アクセス情報 */}
+        <div className="space-y-1.5 mb-3">
+          {juku.station && <p className="text-sm text-gray-500 flex items-center gap-1.5">🚃 <span>{juku.station}</span></p>}
+          {juku.address && <p className="text-sm text-gray-500 flex items-center gap-1.5">📍 <span>{juku.address}</span></p>}
+          {juku.hours && <p className="text-sm text-gray-500 flex items-center gap-1.5">🕐 <span>{juku.hours}</span></p>}
         </div>
-        {juku.price && <p className="text-sm font-bold text-[#FF9A3C] mb-3">💰 {juku.price}</p>}
+
+        {/* タグ */}
         {juku.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
+          <div className="flex flex-wrap gap-1 mb-3">
             {juku.tags.map((tag) => <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200">{tag}</span>)}
           </div>
         )}
 
-        {/* Instagramリール */}
-        <InstagramReels urls={juku.reelUrls} />
+        {/* Instagram動画リンク */}
+        {juku.reelUrls.length > 0 && (
+          <div className="mb-3">
+            <p className="text-xs font-bold text-gray-400 mb-2">🎬 内装・先生の雰囲気を動画でチェック</p>
+            <div className="flex flex-col gap-2">
+              {juku.reelUrls.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-gradient-to-r from-[#f09433] via-[#e6683c] to-[#bc1888] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                  </svg>
+                  <span>{juku.reelUrls.length > 1 ? `動画${i + 1}を見る` : "Instagramで動画を見る"} →</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between text-sm font-semibold text-pink-500 border border-pink-200 rounded-xl px-4 py-2 hover:bg-pink-50 transition-colors mt-4">
+        {/* レビュー */}
+        <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between text-sm font-semibold text-pink-500 border border-pink-200 rounded-xl px-4 py-2 hover:bg-pink-50 transition-colors">
           <span>🔍 ぶっちゃけレビューを見る</span>
           <span className={`transition-transform duration-200 inline-block ${open ? "rotate-180" : ""}`}>▼</span>
         </button>
         {open && (
           <div className="mt-3 space-y-3 text-sm">
-            {juku.review.merit && <div className="bg-green-50 rounded-xl p-3"><p className="font-semibold text-green-600 mb-1">✅ メリット</p><p className="text-gray-700">{juku.review.merit}</p></div>}
-            {juku.review.demerit && <div className="bg-red-50 rounded-xl p-3"><p className="font-semibold text-red-400 mb-1">⚠️ デメリット</p><p className="text-gray-700">{juku.review.demerit}</p></div>}
+            {juku.review.merit && <div className="bg-green-50 rounded-xl p-3"><p className="font-semibold text-green-600 mb-1">✅ メリット・特徴</p><p className="text-gray-700">{juku.review.merit}</p></div>}
             {juku.review.peachComment && <div className="bg-gradient-to-r from-pink-50 to-orange-50 rounded-xl p-3 border border-pink-100"><p className="font-semibold text-[#FF6B9D] mb-1">🍑 ぴーちゃんの一言</p><p className="text-gray-700">{juku.review.peachComment}</p></div>}
           </div>
         )}
+
         {juku.lineUrl && (
           <a href={juku.lineUrl} target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#06C755] text-white font-semibold text-sm hover:bg-[#05b34d] transition-colors">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.86 1.4 5.41 3.59 7.12L4.5 22l3.27-1.72C9.02 20.73 10.48 21 12 21c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg>
@@ -156,25 +107,22 @@ export default function Home() {
   useEffect(() => {
     async function fetchJukus() {
       const res = await fetch("/api/jukus");
-      const text = await res.text();
       if (!res.ok) { setLoading(false); return; }
-      let json: { data: Record<string, unknown>[] };
-      try { json = JSON.parse(text); } catch { setLoading(false); return; }
+      const json = await res.json();
       const rows = json.data || [];
-      const mapped: JukuData[] = rows.map((row) => ({
+      const mapped: JukuData[] = rows.map((row: Record<string, unknown>) => ({
         id: row.id as string,
         name: (row.name as string) || "",
         area: (row.area as string) || "",
         station: (row.station as string) || "",
+        address: (row.address as string) || "",
+        hours: (row.hours as string) || "",
         type: (row.type as string) || "",
-        price: (row.price_range as string) || "",
-        rating: (row.rating as number) ?? 0,
         tags: ((row.juku_tags as { tag: string }[]) || []).map((t) => t.tag),
         targets: ((row.juku_targets as { target: string }[]) || []).map((t) => t.target),
-        tiktokViews: (row.tiktok_views as string) || "",
         thumbnail: ((row.images as string[]) || [])[0] || DEFAULT_THUMBNAIL,
         reelUrls: (row.reel_urls as string[]) || [],
-        review: { merit: (row.merit as string) || "", demerit: (row.demerit as string) || "", peachComment: (row.peach_comment as string) || "" },
+        review: { merit: (row.merit as string) || "", peachComment: (row.peach_comment as string) || "" },
         lineUrl: (row.line_url as string) || "",
       }));
       setJukuList(mapped);
@@ -186,7 +134,6 @@ export default function Home() {
   const allTags = Array.from(new Set(jukuList.flatMap((j) => j.tags)));
   const allTargets = Array.from(new Set(jukuList.flatMap((j) => j.targets)));
   const allAreas = Array.from(new Set(jukuList.map((j) => j.area).filter(Boolean)));
-
   const activeFilterCount = selectedTags.length + selectedTargets.length + (selectedArea ? 1 : 0);
 
   const filtered = jukuList.filter((juku) => {
@@ -198,12 +145,6 @@ export default function Home() {
     return tagMatch && targetMatch && areaMatch && textMatch;
   });
 
-  const clearAll = () => {
-    setSelectedTags([]);
-    setSelectedTargets([]);
-    setSelectedArea("");
-  };
-
   return (
     <div className="min-h-screen bg-[#FFF8F5]">
       {filterOpen && (
@@ -213,18 +154,16 @@ export default function Home() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-gray-800">🔧 絞り込み</h2>
               <div className="flex gap-2">
-                {activeFilterCount > 0 && <button onClick={clearAll} className="text-xs text-gray-400 underline">すべてクリア</button>}
-                <button onClick={() => setFilterOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">✕</button>
+                {activeFilterCount > 0 && <button onClick={() => { setSelectedTags([]); setSelectedTargets([]); setSelectedArea(""); }} className="text-xs text-gray-400 underline">すべてクリア</button>}
+                <button onClick={() => setFilterOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500">✕</button>
               </div>
             </div>
             {allAreas.length > 0 && (
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">📍 エリア</p>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setSelectedArea("")} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedArea === "" ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>すべて</button>
-                  {allAreas.map((area) => (
-                    <button key={area} onClick={() => setSelectedArea(selectedArea === area ? "" : area)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedArea === area ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>{area}</button>
-                  ))}
+                  <button onClick={() => setSelectedArea("")} className={`text-xs px-3 py-1.5 rounded-full font-medium ${selectedArea === "" ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>すべて</button>
+                  {allAreas.map((area) => <button key={area} onClick={() => setSelectedArea(selectedArea === area ? "" : area)} className={`text-xs px-3 py-1.5 rounded-full font-medium ${selectedArea === area ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>{area}</button>)}
                 </div>
               </div>
             )}
@@ -232,9 +171,7 @@ export default function Home() {
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">🏷️ タグ</p>
                 <div className="flex flex-wrap gap-2">
-                  {allTags.map((tag) => (
-                    <button key={tag} onClick={() => setSelectedTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag])} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedTags.includes(tag) ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>{tag}</button>
-                  ))}
+                  {allTags.map((tag) => <button key={tag} onClick={() => setSelectedTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag])} className={`text-xs px-3 py-1.5 rounded-full font-medium ${selectedTags.includes(tag) ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>{tag}</button>)}
                 </div>
               </div>
             )}
@@ -242,9 +179,7 @@ export default function Home() {
               <div className="mb-6">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">🎯 こんな人向け</p>
                 <div className="flex flex-wrap gap-2">
-                  {allTargets.map((target) => (
-                    <button key={target} onClick={() => setSelectedTargets((prev) => prev.includes(target) ? prev.filter((t) => t !== target) : [...prev, target])} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedTargets.includes(target) ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>{target}</button>
-                  ))}
+                  {allTargets.map((target) => <button key={target} onClick={() => setSelectedTargets((prev) => prev.includes(target) ? prev.filter((t) => t !== target) : [...prev, target])} className={`text-xs px-3 py-1.5 rounded-full font-medium ${selectedTargets.includes(target) ? "bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] text-white" : "bg-[#F5EDE8] text-gray-600"}`}>{target}</button>)}
                 </div>
               </div>
             )}
@@ -298,19 +233,17 @@ export default function Home() {
         {!loading && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-400">{filtered.length}件の塾が見つかりました</p>
-            {activeFilterCount > 0 && <button onClick={clearAll} className="text-xs text-pink-400 underline">フィルターをクリア</button>}
+            {activeFilterCount > 0 && <button onClick={() => { setSelectedTags([]); setSelectedTargets([]); setSelectedArea(""); }} className="text-xs text-pink-400 underline">フィルターをクリア</button>}
           </div>
         )}
-        <div className="space-y-5">
-          {loading ? (
-            <div className="text-center py-16 text-gray-300"><p className="text-5xl mb-3 animate-pulse">🍑</p><p className="text-sm">読み込み中...</p></div>
-          ) : filtered.length > 0 ? (
-            filtered.map((juku) => <JukuCard key={juku.id} juku={juku} />)
-          ) : (
-            <div className="text-center py-12 text-gray-400"><p className="text-4xl mb-3">🍑</p><p>条件に合う塾が見つかりませんでした</p></div>
-          )}
-        </div>
-        <div className="mx-4 rounded-[22px] bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] p-6 text-center">
+        {loading ? (
+          <div className="text-center py-16 text-gray-300"><p className="text-5xl mb-3 animate-pulse">🍑</p><p className="text-sm">読み込み中...</p></div>
+        ) : filtered.length > 0 ? (
+          filtered.map((juku) => <JukuCard key={juku.id} juku={juku} />)
+        ) : (
+          <div className="text-center py-12 text-gray-400"><p className="text-4xl mb-3">🍑</p><p>条件に合う塾が見つかりませんでした</p></div>
+        )}
+        <div className="rounded-[22px] bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] p-6 text-center">
           <p className="text-3xl mb-2">💌</p>
           <h3 className="text-white font-bold text-xl mb-2">迷ったらぴーちゃんに相談！</h3>
           <p className="text-white/90 text-sm leading-relaxed mb-5">LINEで塾の悩みをなんでも聞きます。<br />無料カウンセリング、気軽に送ってね🌸</p>
