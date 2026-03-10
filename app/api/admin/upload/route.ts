@@ -1,52 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-function getAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-function isAuthorized(request: NextRequest) {
-  const password = request.headers.get("x-admin-password");
-  return password === process.env.ADMIN_PASSWORD;
-}
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const files = formData.getAll("images") as File[];
+    const urls: string[] = [];
 
-export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    for (const file of files) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const ext = file.name.split(".").pop() || "jpg";
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const formData = await request.formData();
-  const files = formData.getAll("files") as File[];
+      const { error } = await supabase.storage
+        .from("juku-images")
+        .upload(fileName, buffer, { contentType: file.type });
 
-  if (files.length === 0) {
-    return NextResponse.json({ error: "ファイルが指定されていません" }, { status: 400 });
-  }
+      if (error) {
+        console.error("Upload error:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
 
-  const supabase = getAdminClient();
-  const urls: string[] = [];
+      const { data } = supabase.storage
+        .from("juku-images")
+        .getPublicUrl(fileName);
 
-  for (const file of files) {
-    const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
-
-    const { error } = await supabase.storage
-      .from("juku-images")
-      .upload(path, buffer, { contentType: file.type, upsert: false });
-
-    if (error) {
-      console.error("[upload] storage error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      urls.push(data.publicUrl);
     }
 
-    const { data } = supabase.storage.from("juku-images").getPublicUrl(path);
-    urls.push(data.publicUrl);
+    return NextResponse.json({ urls });
+  } catch (err) {
+    console.error("Upload failed:", err);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
-
-  return NextResponse.json({ urls });
 }
