@@ -190,7 +190,7 @@ export default function Home() {
 
       <header className="bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] px-4 pt-6 pb-4 text-white">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold tracking-tight">🍑 塾オタク</h1>
+          <h1 className="text-2xl font-bold tracking-tight">🍑 ぴちゃんの塾コレクション 🍑</h1>
           <p className="text-sm opacity-90 mt-0.5 mb-4">ぴーちゃんが本音でレビューする塾まとめ</p>
           <div className="flex gap-2 mb-3">
             <a href="https://www.instagram.com/pichan_jukushokai?igsh=dDQ5NTcxbGY3NmRp&utm_source=qr" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl py-2 text-white text-xs font-semibold hover:bg-white/30 transition-colors">

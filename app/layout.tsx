@@ -6,7 +6,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "塾オタク｜ぴーちゃんの本音塾レビュー",
+  title: "🍑ぴちゃんの塾コレクション🍑",
   description: "ぴーちゃんが100校以上取材！メリット・デメリット本音でレビューする塾まとめサイト",
   manifest: "/manifest.json",
   appleWebApp: {
