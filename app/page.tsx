@@ -20,6 +20,7 @@ type JukuData = {
   reelUrls: string[];
   review: { merit: string; peachComment: string };
   lineUrl: string;
+  jukuUrl: string;
 };
 
 function JukuCard({ juku }: { juku: JukuData }) {
@@ -83,6 +84,11 @@ function JukuCard({ juku }: { juku: JukuData }) {
           </div>
         )}
 
+        {juku.jukuUrl && (
+          <a href={juku.jukuUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-white text-gray-600 font-semibold text-sm border border-gray-200 hover:bg-gray-50 transition-colors">
+            🏫 公式サイトを見る
+          </a>
+        )}
         {juku.lineUrl && (
           <a href={juku.lineUrl} target="_blank" rel="noopener noreferrer" className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#06C755] text-white font-semibold text-sm hover:bg-[#05b34d] transition-colors">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.86 1.4 5.41 3.59 7.12L4.5 22l3.27-1.72C9.02 20.73 10.48 21 12 21c5.52 0 10-4.03 10-9S17.52 2 12 2z"/></svg>
@@ -124,6 +130,7 @@ export default function Home() {
         reelUrls: (row.reel_urls as string[]) || [],
         review: { merit: (row.merit as string) || "", peachComment: (row.peach_comment as string) || "" },
         lineUrl: (row.line_url as string) || "",
+        jukuUrl: (row.juku_url as string) || "",
       }));
       setJukuList(mapped);
       setLoading(false);
