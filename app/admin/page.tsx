@@ -15,6 +15,7 @@ type Juku = {
   peach_comment: string | null;
   line_url: string | null;
   juku_url: string | null;
+  juku_url: string | null;
   images: string[] | null;
   reel_urls: string[] | null;
   juku_tags: { tag: string }[];
@@ -240,6 +241,7 @@ export default function AdminPage() {
             <div style={sectionStyle}>
               <p style={{ fontSize: 11, color: "#FF9A3C", fontWeight: "bold", marginBottom: 12, letterSpacing: 1 }}>🔗 リンク・SNS</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div><label style={labelStyle}>塾の公式URL</label><input value={form.juku_url} onChange={(e) => setForm({ ...form, juku_url: e.target.value })} placeholder="例：https://www.takeda.tv/shibuya/" style={inputStyle} /></div>
                 <div><label style={labelStyle}>LINE URL</label><input value={form.line_url} onChange={(e) => setForm({ ...form, line_url: e.target.value })} placeholder="例：https://lin.ee/xxxxx" style={inputStyle} /></div>
                 <div><label style={labelStyle}>塾の公式URL</label><input value={form.juku_url} onChange={(e) => setForm({ ...form, juku_url: e.target.value })} placeholder="例：https://www.takeda.tv/shibuya/" style={inputStyle} /></div>
                 <div>
