@@ -191,7 +191,7 @@ export default function Home() {
       <header className="bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] px-4 pt-6 pb-4 text-white">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold tracking-tight">🍑 ぴちゃんの塾コレクション 🍑</h1>
-          <p className="text-sm opacity-90 mt-0.5 mb-4">ぴーちゃんが本音でレビューする塾まとめ</p>
+          <p className="text-sm opacity-90 mt-0.5 mb-4">ぴちゃんが本音でレビューする塾まとめ</p>
           <div className="flex gap-2 mb-3">
             <a href="https://www.instagram.com/pichan_jukushokai?igsh=dDQ5NTcxbGY3NmRp&utm_source=qr" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl py-2 text-white text-xs font-semibold hover:bg-white/30 transition-colors">
               <span>📸</span> Instagram
@@ -223,7 +223,7 @@ export default function Home() {
           {missionOpen && (
             <div className="mt-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-sm text-white/95 leading-relaxed">
               塾選びって情報が多すぎて正直どこがいいかわからないよね。公式サイトはいいことしか書いてないし、口コミサイトも信用できるか不安…。<br /><br />
-              ぴーちゃんは100校以上の塾を実際に取材・体験してきた「塾オタク」。<strong className="font-bold">メリットもデメリットも本音で</strong>伝えることで、あなたにぴったりの塾が見つかるお手伝いをするよ🌸
+              ぴちゃんは100校以上の塾を実際に取材・体験してきた「塾オタク」。<strong className="font-bold">メリットもデメリットも本音で</strong>伝えることで、あなたにぴったりの塾が見つかるお手伝いをするよ🌸
             </div>
           )}
         </div>
@@ -245,7 +245,7 @@ export default function Home() {
         )}
         <div className="rounded-[22px] bg-gradient-to-r from-[#FF6B9D] to-[#FF9A3C] p-6 text-center">
           <p className="text-3xl mb-2">💌</p>
-          <h3 className="text-white font-bold text-xl mb-2">迷ったらぴーちゃんに相談！</h3>
+          <h3 className="text-white font-bold text-xl mb-2">迷ったらぴちゃんに相談！</h3>
           <p className="text-white/90 text-sm leading-relaxed mb-5">LINEで塾の悩みをなんでも聞きます。<br />無料カウンセリング、気軽に送ってね🌸</p>
           <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-[#FF6B9D] font-bold text-sm px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
             📩 LINEで無料相談する

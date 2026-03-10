@@ -7,7 +7,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "🍑ぴちゃんの塾コレクション🍑",
-  description: "ぴーちゃんが100校以上取材！メリット・デメリット本音でレビューする塾まとめサイト",
+  description: "ぴちゃんが100校以上取材！メリット・デメリット本音でレビューする塾まとめサイト",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
