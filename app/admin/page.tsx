@@ -228,8 +228,8 @@ export default function AdminPage() {
             <div style={sectionStyle}>
               <p style={{ fontSize: 11, color: "#FF9A3C", fontWeight: "bold", marginBottom: 12, letterSpacing: 1 }}>💬 レビュー</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div><label style={labelStyle}>メリット・塾の特徴</label><textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
-                <div><label style={labelStyle}>ぴーちゃんの一言 🍑</label><textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！🔥" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
+                <div><label style={labelStyle}>特徴</label><textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
+                <div><label style={labelStyle}>こんな人にオススメ!!</label><textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！🔥" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
               </div>
             </div>
 

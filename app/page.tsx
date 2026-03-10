@@ -73,13 +73,13 @@ function JukuCard({ juku }: { juku: JukuData }) {
 
         {/* レビュー */}
         <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between text-sm font-semibold text-pink-500 border border-pink-200 rounded-xl px-4 py-2 hover:bg-pink-50 transition-colors">
-          <span>🔍 ぶっちゃけレビューを見る</span>
+          <span>🔍 レビューを見る</span>
           <span className={`transition-transform duration-200 inline-block ${open ? "rotate-180" : ""}`}>▼</span>
         </button>
         {open && (
           <div className="mt-3 space-y-3 text-sm">
-            {juku.review.merit && <div className="bg-green-50 rounded-xl p-3"><p className="font-semibold text-green-600 mb-1">✅ メリット・特徴</p><p className="text-gray-700">{juku.review.merit}</p></div>}
-            {juku.review.peachComment && <div className="bg-gradient-to-r from-pink-50 to-orange-50 rounded-xl p-3 border border-pink-100"><p className="font-semibold text-[#FF6B9D] mb-1">🍑 ぴーちゃんの一言</p><p className="text-gray-700">{juku.review.peachComment}</p></div>}
+            {juku.review.merit && <div className="bg-green-50 rounded-xl p-3"><p className="font-semibold text-green-600 mb-1">✨ 特徴</p><p className="text-gray-700">{juku.review.merit}</p></div>}
+            {juku.review.peachComment && <div className="bg-gradient-to-r from-pink-50 to-orange-50 rounded-xl p-3 border border-pink-100"><p className="font-semibold text-[#FF6B9D] mb-1">🎯 こんな人にオススメ!!</p><p className="text-gray-700">{juku.review.peachComment}</p></div>}
           </div>
         )}
 
