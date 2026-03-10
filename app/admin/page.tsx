@@ -14,6 +14,7 @@ type Juku = {
   merit: string | null;
   peach_comment: string | null;
   line_url: string | null;
+  juku_url: string | null;
   images: string[] | null;
   reel_urls: string[] | null;
   juku_tags: { tag: string }[];
@@ -30,6 +31,7 @@ type FormState = {
   merit: string;
   peach_comment: string;
   line_url: string;
+  juku_url: string;
   tags: string;
   targets: string;
   reel_urls: string;
@@ -38,6 +40,7 @@ type FormState = {
 const emptyForm: FormState = {
   name: "", area: "", station: "", address: "", hours: "",
   type: "", merit: "", peach_comment: "", line_url: "",
+  juku_url: "",
   tags: "", targets: "", reel_urls: "",
 };
 
@@ -138,6 +141,7 @@ export default function AdminPage() {
       address: juku.address || "", hours: juku.hours || "", type: juku.type || "",
       merit: juku.merit || "", peach_comment: juku.peach_comment || "",
       line_url: juku.line_url || "",
+      juku_url: juku.juku_url || "",
       tags: (juku.juku_tags || []).map((t) => t.tag).join(","),
       targets: (juku.juku_targets || []).map((t) => t.target).join(","),
       reel_urls: (juku.reel_urls || []).join("\n"),
@@ -228,8 +232,8 @@ export default function AdminPage() {
             <div style={sectionStyle}>
               <p style={{ fontSize: 11, color: "#FF9A3C", fontWeight: "bold", marginBottom: 12, letterSpacing: 1 }}>💬 レビュー</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div><label style={labelStyle}>特徴</label><textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
-                <div><label style={labelStyle}>こんな人にオススメ!!</label><textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！🔥" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
+                <div><label style={labelStyle}>メリット・塾の特徴</label><textarea value={form.merit} onChange={(e) => setForm({ ...form, merit: e.target.value })} placeholder="例：自習室が24時間使えて管理が徹底されている。" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
+                <div><label style={labelStyle}>ぴーちゃんの一言 🍑</label><textarea value={form.peach_comment} onChange={(e) => setForm({ ...form, peach_comment: e.target.value })} placeholder="例：気合いがある子には最高の環境！🔥" rows={3} style={{ ...inputStyle, resize: "none" }} /></div>
               </div>
             </div>
 
@@ -237,6 +241,7 @@ export default function AdminPage() {
               <p style={{ fontSize: 11, color: "#FF9A3C", fontWeight: "bold", marginBottom: 12, letterSpacing: 1 }}>🔗 リンク・SNS</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <div><label style={labelStyle}>LINE URL</label><input value={form.line_url} onChange={(e) => setForm({ ...form, line_url: e.target.value })} placeholder="例：https://lin.ee/xxxxx" style={inputStyle} /></div>
+                <div><label style={labelStyle}>塾の公式URL</label><input value={form.juku_url} onChange={(e) => setForm({ ...form, juku_url: e.target.value })} placeholder="例：https://www.takeda.tv/shibuya/" style={inputStyle} /></div>
                 <div>
                   <label style={labelStyle}>📸 Instagramリール（1行に1つ）</label>
                   <textarea value={form.reel_urls} onChange={(e) => setForm({ ...form, reel_urls: e.target.value })} placeholder={"例：\nhttps://www.instagram.com/reel/xxxxx/"} rows={4} style={{ ...inputStyle, resize: "none" }} />

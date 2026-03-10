@@ -17,10 +17,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { id, name, area, station, address, hours, type, merit, peach_comment, line_url, images, reel_urls, tags, targets } = body;
+  const { id, name, area, station, address, hours, type, merit, peach_comment, line_url, juku_url, juku_url, images, reel_urls, tags, targets } = body;
 
   const jukuData = {
-    name, area, station, address, hours, type, merit, peach_comment, line_url,
+    name, area, station, address, hours, type, merit, peach_comment, line_url, juku_url,
     images: images || [],
     reel_urls: reel_urls || [],
   };
