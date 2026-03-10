@@ -222,8 +222,7 @@ export default function Home() {
           </button>
           {missionOpen && (
             <div className="mt-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-sm text-white/95 leading-relaxed">
-              塾選びって情報が多すぎて正直どこがいいかわからないよね。公式サイトはいいことしか書いてないし、口コミサイトも信用できるか不安…。<br /><br />
-              ぴちゃんは100校以上の塾を実際に取材・体験してきた「塾オタク」。<strong className="font-bold">メリットもデメリットも本音で</strong>伝えることで、あなたにぴったりの塾が見つかるお手伝いをするよ🌸
+              ・比較サイトで条件を絞っても、なんだかしっくりこない…。<br />・全国に校舎があって評判がいい塾でも、実際に通う校舎が自分に合うかは分からないよね。<br />・個人塾も気になるけど、HPの情報が少なくてちょっと不安…。<br /><br />だからこそ、文章だけでは伝わらない<br /><strong className="font-bold">「塾の雰囲気」や「先生の人柄」を、動画で届けたい‼︎</strong><br /><br />ぴちゃんは、これまで100校以上の塾を実際に取材・体験してきた塾オタク。<br />いいところだけじゃなく、気になるところも本音で紹介しながら、<br />あなたにぴったりの塾探しをお手伝いするよ🌸
             </div>
           )}
         </div>
