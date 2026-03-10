@@ -19,10 +19,9 @@ export async function POST(req: NextRequest) {
 
       const { error } = await supabase.storage
         .from("juku-images")
-        .upload(fileName, buffer, { contentType: file.type });
+        .upload(fileName, buffer, { contentType: file.type, upsert: true });
 
       if (error) {
-        console.error("Upload error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
