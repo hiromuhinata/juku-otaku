@@ -203,7 +203,11 @@ export default function Home() {
               💬 ぴちゃんに無料相談する
             </a>
             
-          <div className="flex gap-2 mb-3">
+          <div className="flex flex-col gap-2 mb-3">
+            <a href="https://lin.ee/5jk3DeQ" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-[#06C755] rounded-xl py-3 text-white text-sm font-bold hover:bg-[#05b34d] transition-colors">
+              <span>💬</span> LINEでぴちゃんに相談する
+            </a>
+            <div className="flex gap-2">
             <a href="https://www.instagram.com/pichan_jukushokai?igsh=dDQ5NTcxbGY3NmRp&utm_source=qr" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl py-2 text-white text-xs font-semibold hover:bg-white/30 transition-colors">
               <span>📸</span> Instagram
             </a>
@@ -214,6 +218,7 @@ export default function Home() {
             <a href="#" className="flex-1 flex items-center justify-center gap-1.5 bg-[#06C755]/90 border border-white/20 rounded-xl py-2 text-white text-xs font-semibold hover:bg-[#06C755] transition-colors">
               <span>💬</span> LINE相談
             </a>
+            </div>
           </div>
           <div className="flex gap-2 mb-3">
             <div className="relative flex-1">
@@ -257,7 +262,7 @@ export default function Home() {
           <p className="text-3xl mb-2">💌</p>
           <h3 className="text-white font-bold text-xl mb-2">迷ったらぴちゃんに相談！</h3>
           <p className="text-white/90 text-sm leading-relaxed mb-5">LINEで塾の悩みをなんでも聞きます。<br />無料カウンセリング、気軽に送ってね🌸</p>
-          <a href="https://line.me" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-[#FF6B9D] font-bold text-sm px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
+          <a href="https://lin.ee/5jk3DeQ" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-[#FF6B9D] font-bold text-sm px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
             📩 LINEで無料相談する
           </a>
         </div>
