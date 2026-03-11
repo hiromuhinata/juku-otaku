@@ -202,7 +202,7 @@ export default function Home() {
             <a href="https://lin.ee/5jk3DeQ" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#06C755] text-white font-semibold text-sm hover:bg-[#05b34d] transition-colors">
               💬 ぴちゃんに無料相談する
             </a>
-            <p className="hidden</p>
+            
           <div className="flex gap-2 mb-3">
             <a href="https://www.instagram.com/pichan_jukushokai?igsh=dDQ5NTcxbGY3NmRp&utm_source=qr" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl py-2 text-white text-xs font-semibold hover:bg-white/30 transition-colors">
               <span>📸</span> Instagram
