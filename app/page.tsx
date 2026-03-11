@@ -199,9 +199,6 @@ export default function Home() {
         <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold tracking-tight">🍑 ぴちゃんの塾コレクション 🍑</h1>
           <p className="text-sm opacity-90 mt-0.5 mb-4">塾オタク女子大生による比較サイト</p>
-            <a href="https://lin.ee/5jk3DeQ" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#06C755] text-white font-semibold text-sm hover:bg-[#05b34d] transition-colors">
-              💬 ぴちゃんに無料相談する
-            </a>
             
           <div className="flex flex-col gap-2 mb-3">
             <a href="https://lin.ee/5jk3DeQ" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-[#06C755] rounded-xl py-3 text-white text-sm font-bold hover:bg-[#05b34d] transition-colors">
