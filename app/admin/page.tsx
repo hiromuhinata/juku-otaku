@@ -242,7 +242,6 @@ export default function AdminPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <div><label style={labelStyle}>塾の公式URL</label><input value={form.juku_url} onChange={(e) => setForm({ ...form, juku_url: e.target.value })} placeholder="例：https://www.takeda.tv/shibuya/" style={inputStyle} /></div>
                 <div><label style={labelStyle}>LINE URL</label><input value={form.line_url} onChange={(e) => setForm({ ...form, line_url: e.target.value })} placeholder="例：https://lin.ee/xxxxx" style={inputStyle} /></div>
-                <div><label style={labelStyle}>塾の公式URL</label><input value={form.juku_url} onChange={(e) => setForm({ ...form, juku_url: e.target.value })} placeholder="例：https://www.takeda.tv/shibuya/" style={inputStyle} /></div>
                 <div>
                   <label style={labelStyle}>📸 Instagramリール（1行に1つ）</label>
                   <textarea value={form.reel_urls} onChange={(e) => setForm({ ...form, reel_urls: e.target.value })} placeholder={"例：\nhttps://www.instagram.com/reel/xxxxx/"} rows={4} style={{ ...inputStyle, resize: "none" }} />
