@@ -15,7 +15,6 @@ type Juku = {
   peach_comment: string | null;
   line_url: string | null;
   juku_url: string | null;
-  juku_url: string | null;
   images: string[] | null;
   reel_urls: string[] | null;
   juku_tags: { tag: string }[];
